@@ -37,7 +37,7 @@ def pvsim(params):
     data = {'Ir': Ir, 'Pmax': Pmax, 'Vmax': Vmax, 'Vvec':Vvec, 'Pvec': P, 'Ivec':Ivec}
     return data
 
-
+#ARRAYS ARE CREATED TO SAVE THE POWER, VOLTAGE AND CURRENT CURVES.
 vvec=np.ones(156)
 ivec=np.ones(156)
 pmax=np.ones(156)
@@ -46,18 +46,12 @@ iter=0
 iter2=0
 
 v=44.2
-irr =np.array([[1000,1000,1000],[1000,500,200],[100,100,100]])
+irr =np.array([[1000,1000,1000],[1000,500,200],[100,100,100]]) #IRRADIANCE PROFILES USED.
 T=25.0
-
-aux=np.array([0.7*v,0.5*v,0.2*v])
-init_pos=aux.reshape(3,1)
-
-bounds = ([0],[44.2])
-
 
 #************* Desition Tree **************/
 
-def DT(vPV,iPV):
+def DT(vPV,iPV):#RECIEVE VOLTAGE AND CURRENT IN PV SYSTEM AND RETURN A VOLTAGE REFERENCE.
 
     clase=np.array([40,20,10])
     leaf=0
@@ -160,38 +154,38 @@ def DT(vPV,iPV):
 
 
 def po(vact,vpas,ipas,step):
-
+    #FUNCTION THAT PLAYS THE P&O
     params = np.append(current_irr,[T,vact])
     data = pvsim(params.tolist())
     I_pv=data['Ir']
     pact=vact*I_pv
     ppas=vpas*ipas
     #P&O
-    if pact > ppas:                               #SI P_ACT ES MAYOR A P_PAS
+    if pact > ppas:                               #IF P_ACT IS GREATER THAN P_PAS
         if vact > vpas:
             vpas=vact
             ipas=I_pv
-            vact=vact+step #subir
+            vact=vact+step #UP
             return vact,vpas,ipas
         else:
             vpas=vact
             ipas=I_pv
-            vact=vact-step #bajar
+            vact=vact-step #DOWN
             return vact,vpas,ipas
-    else:                                            #SI P_ACT NO ES MAYOR A P_PAS
+    else:                                            #IF P_ACT IS NOT GREATER THAN P_PAS
         if vact < vpas:
             vpas=vact
             ipas=I_pv
-            vact=vact+step #subir
+            vact=vact+step #UP
             return vact,vpas,ipas
         else:
             vpas=vact
             ipas=I_pv
-            vact=vact-step #bajar
+            vact=vact-step #DOWN
             return vact,vpas,ipas
 
 
-current_irr=irr[0,:]
+current_irr=irr[0,:] #CURRENT IRRADIANCE
 
 valoresV=np.linspace(5,40,8)
 auxP=np.zeros((8))
@@ -205,10 +199,10 @@ vact=40
 vpas=0
 ipas=0
 step=0.2
-vact,vpas,ipas=po(vact,vpas,ipas,step)
+vact,vpas,ipas=po(vact,vpas,ipas,step) #INITIALIZE P&O
 
-m=np.ones(8)*10
-stab_m=0
+m=np.ones(8)*10 #ARRAY TO WAIT FOR STABILIZATION
+stab_m=0 #STABILIZATION COUNTER
 
 
 for instance in range(156):
