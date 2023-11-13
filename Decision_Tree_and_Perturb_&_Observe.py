@@ -156,32 +156,32 @@ def DT(vPV,iPV):#RECIEVE VOLTAGE AND CURRENT IN PV SYSTEM AND RETURN A VOLTAGE R
 def po(vact,vpas,ipas,step):
     #FUNCTION THAT PLAYS THE P&O
     params = np.append(current_irr,[T,vact])
-    data = pvsim(params.tolist())
-    I_pv=data['Ir']
-    pact=vact*I_pv
-    ppas=vpas*ipas
+    data = pvsim(params.tolist()) #PV DATA IS OBTAINED
+    I_pv=data['Ir'] #PV CURRENT AT VACT INSTANT IS EXTRACTED
+    pact=vact*I_pv #ACTUAL PV POWER IS CALCULATED
+    ppas=vpas*ipas #PASS PV POWER IS CALCULATED
     #P&O
     if pact > ppas:                               #IF P_ACT IS GREATER THAN P_PAS
         if vact > vpas:
             vpas=vact
             ipas=I_pv
-            vact=vact+step #UP
+            vact=vact+step #STEP UP REFERENCE
             return vact,vpas,ipas
         else:
             vpas=vact
             ipas=I_pv
-            vact=vact-step #DOWN
+            vact=vact-step #STEP DOWN REFERENCE
             return vact,vpas,ipas
     else:                                            #IF P_ACT IS NOT GREATER THAN P_PAS
         if vact < vpas:
             vpas=vact
             ipas=I_pv
-            vact=vact+step #UP
+            vact=vact+step #STEP UP REFERENCE
             return vact,vpas,ipas
         else:
             vpas=vact
             ipas=I_pv
-            vact=vact-step #DOWN
+            vact=vact-step #STEP DOWN REFERENCE
             return vact,vpas,ipas
 
 
@@ -195,7 +195,7 @@ maq=0
 gmpptaux=0
 poaux=0
 
-vact=40
+vact=40 #INITIALIZE P&O PARAMETERS
 vpas=0
 ipas=0
 step=0.2
@@ -207,24 +207,24 @@ stab_m=0 #STABILIZATION COUNTER
 
 for instance in range(156):
 
-    if(instance<52):
+    if(instance<52): #FUNCTION TO CHANGE CURRENT IRRADIANCE
         current_irr=irr[0,:]
     if(instance>=52 and instance<104):
         current_irr=irr[1,:]
     if(instance>=104):
         current_irr=irr[2,:]
-    if(instance==52 or instance==104):
+    if(instance==52 or instance==104): #AT A FIXED TIME THE STATE MACHINE CHANGES
         maq=1
 
     match maq:
-        case 0:
+        case 0: #P&O STAGE
             vact,vpas,ipas=po(vact,vpas,ipas,step)
             vvec[iter]=vact
             ivec[iter2]=ipas
             iter=iter+1
             iter2=iter2+1
-        case 1:
-            vact,vpas,ipas=po(vact,vpas,ipas,step)
+        case 1: #DECISION TREE STAGE
+            vact,vpas,ipas=po(vact,vpas,ipas,step) #START WAITING TO P&O STABILIZATION
             vvec[iter]=vact
             ivec[iter2]=ipas
             iter=iter+1
@@ -232,16 +232,16 @@ for instance in range(156):
             m[stab_m]=(vact-vpas)/step
             stab_m+=1
             if(stab_m==8):
-                stab_m=0
+                stab_m=0 
             suma_m=0
             suma_m=np.sum(m)
-            if(suma_m == 0):
+            if(suma_m == 0): #IT MEANS THAT IF P&O IS STABILIZED
                 m=np.ones(8)*10
-                vact=DT(vact,ipas)
+                vact=DT(vact,ipas) #RUN DECISION TREE
                 stab_m=0
                 maq=0
 
-
+#FUNTION TO PLOT MAXIMUM POWER IN TIME.
 for z in range(156):
     if(z<52):
         pmax[z]=380
@@ -255,32 +255,32 @@ x=np.arange(0,156*(1/26),1/26)
 fig, axes = plt.subplots(nrows=3, ncols=1)#, figsize=(8, 40))
 
 
-# Gráfico 1
+# GRAPHIC 1
 axes[0].step(x, vvec*ivec, where='post')
 axes[0].step(x, pmax, where='post', color='red')
 axes[0].set_title('Potencia P(t)')
 axes[0].grid(axis='x', color='0.95')
 axes[0].grid(axis='y', color='0.95')
-axes[0].set_xlim([0, 6])     # Límites del eje x
-axes[0].set_ylim([0, 400])   # Límites del eje y
+axes[0].set_xlim([0, 6])     # X AXIS LIMITS
+axes[0].set_ylim([0, 400])   # Y AXIS LIMITS
 
 
-# Gráfico 2
+# GRAPHIC 2
 axes[1].step(x, vvec, where='post')
 axes[1].set_title('Voltaje V(t)')
 axes[1].grid(axis='x', color='0.95')
 axes[1].grid(axis='y', color='0.95')
-axes[1].set_xlim([0, 6])    # Límites del eje x
-axes[1].set_ylim([0, 50])   # Límites del eje y
+axes[1].set_xlim([0, 6])    # X AXIS LIMITS
+axes[1].set_ylim([0, 50])   # Y AXIS LIMITS
 
 
-# Gráfico 3
+# GRAPHIC 3
 axes[2].step(x, ivec, where='post')
 axes[2].set_title('Corriente I(t)')
 axes[2].grid(axis='x', color='0.95')
 axes[2].grid(axis='y', color='0.95')
-axes[2].set_xlim([0, 6])    # Límites del eje x
-axes[2].set_ylim([0, 15])   # Límites del eje y
+axes[2].set_xlim([0, 6])    # X AXIS LIMITS
+axes[2].set_ylim([0, 15])   # Y AXIS LIMITS
 
 #plt.savefig("dtpo.pdf")
 
