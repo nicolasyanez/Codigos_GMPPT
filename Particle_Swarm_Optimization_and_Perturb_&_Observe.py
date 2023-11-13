@@ -105,27 +105,27 @@ def po(vact,vpas,ipas,step):
     ppas=vpas*ipas
 
     #P&O
-    if pact > ppas:                               #SI P_ACT ES MAYOR A P_PAS
+    if pact > ppas:                               #IF P_ACT IS GREATER THAN P_PAS
         if vact > vpas:
             vpas=vact
             ipas=I_pv
-            vact=vact+step #subir
+            vact=vact+step #UP
             return vact,vpas,ipas
         else:
             vpas=vact
             ipas=I_pv
-            vact=vact-step #bajar
+            vact=vact-step #DOWN
             return vact,vpas,ipas
-    else:                                            #SI P_ACT NO ES MAYOR A P_PAS
+    else:                                            #IF P_ACT IS NOT GREATED THAN P_PAS
         if vact < vpas:
             vpas=vact
             ipas=I_pv
-            vact=vact+step #subir
+            vact=vact+step #UP
             return vact,vpas,ipas
         else:
             vpas=vact
             ipas=I_pv
-            vact=vact-step #bajar
+            vact=vact-step #DOWN
             return vact,vpas,ipas
 
 
