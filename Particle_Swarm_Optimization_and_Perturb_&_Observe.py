@@ -60,35 +60,36 @@ def objective_func(solution):
     #OBJECTIVE FUNCTION, RECEIVES THE NEW SOLUTIONS BY COMPARING THEM WITH THE OBJECTIVE VALUE.
     global irr,T,iter,vvec,ivec,iter2,current_irr
 
-    for num in range(3):
+    for num in range(3): #RECORD THE NEW SOLUTIONS CALCULATED
         vvec[iter]=solution[num]
         iter=iter+1
 
-    pmax=380
+    pmax=380 #OBJECTIVE VALUE
     
-    params = np.append(current_irr,[T,solution[0]])
-    data = pvsim(params.tolist())
+    params = np.append(current_irr,[T,solution[0]]) #CREATE THE ARRAY TO EXTRACT THE PV DATA FOR THE FIRST SOLUTION
+    data = pvsim(params.tolist()) #SAVE THE DATA EXTRACTED FOR THE FIRST SOLUTION
 
-    params2 = np.append(current_irr,[T,solution[1]])
-    data2 = pvsim(params2.tolist())
+    params2 = np.append(current_irr,[T,solution[1]])#CREATE THE ARRAY TO EXTRACT THE PV DATA FOR THE SECOND SOLUTION
+    data2 = pvsim(params2.tolist()) #SAVE THE DATA EXTRACTED FOR THE SECOND SOLUTION
 
-    params3 = np.append(current_irr,[T,solution[2]])
-    data3 = pvsim(params3.tolist())
+    params3 = np.append(current_irr,[T,solution[2]])#CREATE THE ARRAY TO EXTRACT THE PV DATA FOR THE THIRD SOLUTION
+    data3 = pvsim(params3.tolist()) #SAVE THE DATA EXTRACTED THE THIRD SOLUTION
 
-    ipv=[data['Ir'] ,data2['Ir'], data3['Ir']]
+    ipv=[data['Ir'] ,data2['Ir'], data3['Ir']] #SAVE THE CURRENTS CORRESPONDING TO EACH SOLUTION
 
-    for num in range(3):
+    for num in range(3): #RECORD THE CURRENT DATA
         ivec[iter2]=ipv[num]
         iter2=iter2+1
     
-    pvv=np.array([ipv[0]*solution[0],ipv[1]*solution[1],ipv[2]*solution[2]])
+    pvv=np.array([ipv[0]*solution[0],ipv[1]*solution[1],ipv[2]*solution[2]]) #SAVE POWER VALUE CORRESPONDING TO EACH SOLUTION
 
-    objective1 = np.abs(pmax-pvv[0])
+    #THE FITNESS OBTAINED IS CALCULATED BY SUBTRACTING THE TARGET VALUE WITH THE POWER OBTAINED FROM EACH SOLUTION
+    objective1 = np.abs(pmax-pvv[0]) 
     objective2 = np.abs(pmax-pvv[1])
     objective3 = np.abs(pmax-pvv[2])
 
     ob=np.array([objective1,objective2,objective3])
-    obs=np.concatenate(ob)
+    obs=np.concatenate(ob) #THE FITNESS OBTAINED ARE CONCATENATED TO CONTINUE WITH THE METHOD
     
     objective=obs
 
@@ -99,33 +100,33 @@ def po(vact,vpas,ipas,step):
     #FUNCTION THAT PLAYS THE P&O
     
     params = np.append(current_irr,[T,vact])
-    data = pvsim(params.tolist())
-    I_pv=data['Ir']
-    pact=vact*I_pv
-    ppas=vpas*ipas
+    data = pvsim(params.tolist()) #PV DATA IS OBTAINED
+    I_pv=data['Ir'] #PV CURRENT AT VACT INSTANT IS EXTRACTED
+    pact=vact*I_pv #ACTUAL PV POWER IS CALCULATED
+    ppas=vpas*ipas #PASS PV POWER IS CALCULATED
 
     #P&O
     if pact > ppas:                               #IF P_ACT IS GREATER THAN P_PAS
         if vact > vpas:
             vpas=vact
             ipas=I_pv
-            vact=vact+step #UP
+            vact=vact+step #STEP UP REFERENCE
             return vact,vpas,ipas
         else:
             vpas=vact
             ipas=I_pv
-            vact=vact-step #DOWN
+            vact=vact-step #STEP DOWN REFERENCE
             return vact,vpas,ipas
     else:                                            #IF P_ACT IS NOT GREATED THAN P_PAS
         if vact < vpas:
             vpas=vact
             ipas=I_pv
-            vact=vact+step #UP
+            vact=vact+step #STEP UP REFERENCE
             return vact,vpas,ipas
         else:
             vpas=vact
             ipas=I_pv
-            vact=vact-step #DOWN
+            vact=vact-step #STEP DOWN REFERENCE
             return vact,vpas,ipas
 
 
@@ -146,14 +147,14 @@ for instance in range(3):
     iter=iter+1
     iter2=iter2+1
 
-    vgbest=pos
-    vpas=0
+    vgbest=pos #RECORD THE BEST SOLUTION OF PSO TO START P&O
+    vpas=0 #INITIALIZA P&O PARAMETERS
     ipas=0
     step=0.2
     vact,vpas,ipas=po(vgbest,vpas,ipas,step) #INITIALIZE P&O
 
     
-    vvec[iter]=vact
+    vvec[iter]=vact #RECORD DATA FOR PLOT
     ivec[iter2]=ipas
     iter=iter+1
     iter2=iter2+1
@@ -181,32 +182,32 @@ x=np.arange(0,156*(1/26),1/26)
 fig, axes = plt.subplots(nrows=3, ncols=1)
 
 
-# Gráfico 1
+# GRAPHIC 1
 axes[0].step(x, vvec*ivec, where='post')
 axes[0].step(x, pmax, where='post', color='red')
 axes[0].set_title('Potencia P(t)')
 axes[0].grid(axis='x', color='0.95')
 axes[0].grid(axis='y', color='0.95')
-axes[0].set_xlim([0, 6])     # Límites del eje x
-axes[0].set_ylim([0, 400])   # Límites del eje y
+axes[0].set_xlim([0, 6])     # X AXIS LIMITS
+axes[0].set_ylim([0, 400])   # Y AXIS LIMITS
 
 
-# Gráfico 2
+# GRAPHIC 2
 axes[1].step(x, vvec, where='post')
 axes[1].set_title('Voltaje V(t)')
 axes[1].grid(axis='x', color='0.95')
 axes[1].grid(axis='y', color='0.95')
-axes[1].set_xlim([0, 6])    # Límites del eje x
-axes[1].set_ylim([0, 50])   # Límites del eje y
+axes[1].set_xlim([0, 6])    # X AXIS LIMITS
+axes[1].set_ylim([0, 50])   # Y AXIS LIMITS
 
 
-# Gráfico 3
+# GRAPHIC 3
 axes[2].step(x, ivec, where='post')
 axes[2].set_title('Corriente I(t)')
 axes[2].grid(axis='x', color='0.95')
 axes[2].grid(axis='y', color='0.95')
-axes[2].set_xlim([0, 6])    # Límites del eje x
-axes[2].set_ylim([0, 15])   # Límites del eje y
+axes[2].set_xlim([0, 6])    # X AXIS LIMITS
+axes[2].set_ylim([0, 15])   # Y AXIS LIMITS
 
 #plt.savefig("psopoV.pdf")
 plt.show()
