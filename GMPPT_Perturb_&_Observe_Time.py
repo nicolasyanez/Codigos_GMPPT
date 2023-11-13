@@ -59,28 +59,28 @@ def po(vact,vpas,ipas,step):
     pact=vact*I_pv
     ppas=vpas*ipas
 
-    #P&O3
-    if pact > ppas:                               #SI P_ACT ES MAYOR A P_PAS
+    #P&O
+    if pact > ppas:                               #IF P_ACT IS GREATER THAN P_PAS
         if vact > vpas:
             vpas=vact
             ipas=I_pv
-            vact=vact+step #subir
+            vact=vact+step #UP
             return vact,vpas,ipas
         else:
             vpas=vact
             ipas=I_pv
-            vact=vact-step #bajar
+            vact=vact-step #DOWN
             return vact,vpas,ipas
-    else:                                            #SI P_ACT NO ES MAYOR A P_PAS
+    else:                                            #IF P_ACT IS NOT GREATER THAN P_PAS
         if vact < vpas:
             vpas=vact
             ipas=I_pv
-            vact=vact+step #subir
+            vact=vact+step #UP
             return vact,vpas,ipas
         else:
             vpas=vact
             ipas=I_pv
-            vact=vact-step #bajar
+            vact=vact-step #DOWN
             return vact,vpas,ipas
 
 
@@ -108,19 +108,19 @@ for instance in range(156):
     if(instance>=52 and instance<104):
         current_irr=irr[1,:]
     if(instance>=104):
-        current_irr=irr[2,:]
+        current_irr=irr[2,:] #CURRENT IRRADIANCE PROFILE
 
-    if(instance == 78):
+    if(instance == 78): #WHEN A COUNT IS COMPLETED, IT GOES TO THE SWEEP STAGE
         maq=1
 
     match maq:
-        case 0:
+        case 0: #P&O STAGE
             vact,vpas,ipas=po(vact,vpas,ipas,step)
             vvec[iter]=vact
             ivec[iter2]=ipas
             iter=iter+1
             iter2=iter2+1
-        case 1:
+        case 1:#VOLTAGE SWEEP STAGE
             vvec[iter]=valoresV[gmpptaux]
             parametros = np.append(current_irr,[T,valoresV[gmpptaux]])
             datos = pvsim(parametros.tolist())
@@ -134,7 +134,7 @@ for instance in range(156):
                 gmpptaux=0
                 vact=valoresV[np.argmax(auxP)]
 
-
+#FUNTION TO PLOT MAXIMUM POWER IN TIME.
 for z in range(156):
     if(z<52):
         pmax[z]=380
