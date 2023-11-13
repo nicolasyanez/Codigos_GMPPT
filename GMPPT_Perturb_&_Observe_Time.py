@@ -37,7 +37,7 @@ def pvsim(params):
     data = {'Ir': Ir, 'Pmax': Pmax, 'Vmax': Vmax, 'Vvec':Vvec, 'Pvec': P, 'Ivec':Ivec}
     return data
 
-
+#ARRAYS ARE CREATED TO SAVE THE POWER, VOLTAGE AND CURRENT CURVES.
 vvec=np.ones(156)
 ivec=np.ones(156)
 pmax=np.ones(156)
@@ -46,17 +46,12 @@ iter=0
 iter2=0
 
 v=44.2
-irr =np.array([[1000,1000,1000],[1000,500,200],[100,100,100]])
+irr =np.array([[1000,1000,1000],[1000,500,200],[100,100,100]]) #IRRADIANCE PROFILES USED.
 T=25.0
-
-aux=np.array([0.7*v,0.5*v,0.2*v])
-init_pos=aux.reshape(3,1)
-
-bounds = ([0],[44.2])
 
 
 def po(vact,vpas,ipas,step):
-
+    #FUNCTION THAT PLAYS THE P&O
     
     params = np.append(current_irr,[T,vact])
     data = pvsim(params.tolist())
@@ -89,7 +84,7 @@ def po(vact,vpas,ipas,step):
             return vact,vpas,ipas
 
 
-current_irr=irr[0,:]
+current_irr=irr[0,:]#CURRENT IRRADIANCE
 
 valoresV=np.linspace(5,40,8)
 auxP=np.zeros((8))
@@ -103,7 +98,7 @@ vact=40
 vpas=0
 ipas=0
 step=0.2
-vact,vpas,ipas=po(vact,vpas,ipas,step)
+vact,vpas,ipas=po(vact,vpas,ipas,step)#INITIALIZE P&O
 
 
 for instance in range(156):
