@@ -39,7 +39,7 @@ def pvsim(params):
 
 
 #data = {'Ir': Ir, 'Pmax': Pmax, 'Vmax': Vmax, 'Vvec':Vvec, 'Pvec': P, 'Ivec': Ivec} lo que entrega simulate2
-
+#ARRAYS ARE CREATED TO SAVE THE POWER, VOLTAGE AND CURRENT CURVES.
 vvec=np.ones(309)
 ivec=np.ones(309)
 pvec=np.ones(309)
@@ -47,15 +47,15 @@ pmax=np.zeros(309)
 iter=0
 iter2=0
 voc=44.2
-irr =np.array([[1000.,1000.,1000.],[1000.,500.,200.],[100.,100.,100.]])
+irr =np.array([[1000.,1000.,1000.],[1000.,500.,200.],[100.,100.,100.]])#IRRADIANCE PROFILES USED.
 T=25.0
 vgbest=0
 fitness=0
 
 
 def fitness_func(solution,solution_idx):
+    #OBJECTIVE FUNCTION, RECEIVES THE NEW SOLUTIONS BY COMPARING THEM WITH THE OBJECTIVE VALUE.
     global current_irr,fitness,iter,iter2,vvec,ivec,vgbest
-    #print(solution,cosa)
     paramss = np.append(current_irr,[T,solution])
     dataa = pvsim(paramss.tolist())
     ipv=dataa['Ir']
@@ -71,6 +71,7 @@ def fitness_func(solution,solution_idx):
 
 
 def po(vact,vpas,ipas,step):
+    #FUNCTION THAT PLAYS THE P&O
     global current_irr
 
     params = np.append(current_irr,[T,vact])
@@ -107,18 +108,14 @@ def po(vact,vpas,ipas,step):
 for instance in range(3):
     num=0
     num2=0
-    current_irr=irr[instance,:]
-    p_creature=[[0.15*voc],[0.5*voc],[0.85*voc]]
+    current_irr=irr[instance,:] #CURRENT IRRADIANCE
+    p_creature=[[0.15*voc],[0.5*voc],[0.85*voc]] #INITIAL POSITION OF THE INDIVIDUALS
 
-    
+    #GA STAGE
     ga_instance = pygad.GA(num_generations=25,
                        num_parents_mating=2,
                        fitness_func=fitness_func,
                        initial_population=p_creature,
-                       #sol_per_pop=2,
-                       #num_genes=1,
-                       #init_range_low=0,
-                       #init_range_high=44,
                        parent_selection_type='rank',
                        keep_parents=2,
                        crossover_type='single_point',
@@ -127,22 +124,20 @@ for instance in range(3):
                        mutation_num_genes=1,
                        random_mutation_min_val=-1,
                        random_mutation_max_val=1)
-                       #on_stop=on_stop)
-
 
     ga_instance.run()
 
     step=0.2
     vpas=vvec[iter-2]
     ipas=1
-    vact,vpas,ipas=po(vgbest,vpas,ipas,step)
+    vact,vpas,ipas=po(vgbest,vpas,ipas,step) #INITIALIZE P&O
 
     vvec[iter]=vact
     ivec[iter2]=ipas
     iter=iter+1
     iter2=iter2+1
 
-
+    #P&O STAGE
     for num in range(73):
 
         vact,vpas,ipas=po(vact,vpas,ipas,step)
@@ -153,7 +148,7 @@ for instance in range(3):
 
 x=np.arange(0,309*(6/305),6/305)
 
-
+#FUNTION TO PLOT MAXIMUM POWER IN TIME.
 for z in range(309):
     if(z<102):
         pmax[z]=380
