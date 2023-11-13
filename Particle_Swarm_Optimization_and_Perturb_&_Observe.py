@@ -38,7 +38,7 @@ def pvsim(params):
     data = {'Ir': Ir, 'Pmax': Pmax, 'Vmax': Vmax, 'Vvec':Vvec, 'Pvec': P, 'Ivec':Ivec}
     return data
 
-
+#ARRAYS ARE CREATED TO SAVE THE POWER, VOLTAGE AND CURRENT CURVES.
 vvec=np.ones(156)
 ivec=np.ones(156)
 pvec=np.ones(156)
@@ -47,16 +47,17 @@ iter=0
 iter2=0
 
 v=44.2
-irr =np.array([[1000,1000,1000],[1000,500,200],[100,100,100]])
+irr =np.array([[1000,1000,1000],[1000,500,200],[100,100,100]]) #IRRADIANCE PROFILES USED.
 T=25.0
 
 aux=np.array([0.7*v,0.5*v,0.2*v])
-init_pos=aux.reshape(3,1)
+init_pos=aux.reshape(3,1) #INITIAL POSITION OF THE PARTICLES
 
-bounds = ([0],[44.2])
+bounds = ([0],[44.2]) #DEFINED LIMITS
 
 
 def objective_func(solution):
+    #OBJECTIVE FUNCTION, RECEIVES THE NEW SOLUTIONS BY COMPARING THEM WITH THE OBJECTIVE VALUE.
     global irr,T,iter,vvec,ivec,iter2,current_irr
 
     for num in range(3):
@@ -95,7 +96,7 @@ def objective_func(solution):
 
 
 def po(vact,vpas,ipas,step):
-
+    #FUNCTION THAT PLAYS THE P&O
     
     params = np.append(current_irr,[T,vact])
     data = pvsim(params.tolist())
@@ -130,18 +131,17 @@ def po(vact,vpas,ipas,step):
 
 for instance in range(3):
 
-    current_irr=irr[instance,:]
-
+    current_irr=irr[instance,:] #CURRENT IRRADIANCE
+    #PSO STAGE
     # Set-up hyperparameters
-    options = {'c1': 2, 'c2': 1.5, 'w':0.5}
-    objective = objective_func
+    options = {'c1': 2, 'c2': 1.5, 'w':0.5} #PSO PARAMETERS
+    objective = objective_func 
     # Call instance of PSO
-    optimizer = ps.single.GlobalBestPSO(n_particles=3, dimensions=1, options=options, bounds=bounds,init_pos=init_pos)
+    optimizer = ps.single.GlobalBestPSO(n_particles=3, dimensions=1, options=options, bounds=bounds,init_pos=init_pos) #PSO IS INITIALIZED
     # Perform optimization
     cost, pos = optimizer.optimize(objective, iters=3, verbose=False)
 
-    print(380-cost,pos)
-    vvec[iter]=pos
+    vvec[iter]=pos #RECORD DATA
     ivec[iter2]=(380-cost)/pos
     iter=iter+1
     iter2=iter2+1
@@ -150,14 +150,14 @@ for instance in range(3):
     vpas=0
     ipas=0
     step=0.2
-    vact,vpas,ipas=po(vgbest,vpas,ipas,step)
+    vact,vpas,ipas=po(vgbest,vpas,ipas,step) #INITIALIZE P&O
 
     
     vvec[iter]=vact
     ivec[iter2]=ipas
     iter=iter+1
     iter2=iter2+1
-
+    #P&O STAGE
     for num in range(41):
 
         vact,vpas,ipas=po(vact,vpas,ipas,step)
@@ -166,6 +166,7 @@ for instance in range(3):
         iter=iter+1
         iter2=iter2+1
 
+#FUNTION TO PLOT MAXIMUM POWER IN TIME.
 for z in range(156):
     if(z<52):
         pmax[z]=380
