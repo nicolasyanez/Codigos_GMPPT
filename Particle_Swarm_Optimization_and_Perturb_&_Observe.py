@@ -148,7 +148,7 @@ for instance in range(3):
     iter2=iter2+1
 
     vgbest=pos #RECORD THE BEST SOLUTION OF PSO TO START P&O
-    vpas=0 #INITIALIZA P&O PARAMETERS
+    vpas=0 #INITIALIZE P&O PARAMETERS
     ipas=0
     step=0.2
     vact,vpas,ipas=po(vgbest,vpas,ipas,step) #INITIALIZE P&O
