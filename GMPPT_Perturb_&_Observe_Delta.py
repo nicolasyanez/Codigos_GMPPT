@@ -54,33 +54,33 @@ def po(vact,vpas,ipas,step):
     #FUNCTION THAT PLAYS THE P&O
     
     params = np.append(current_irr,[T,vact])
-    data = pvsim(params.tolist())
-    I_pv=data['Ir']
-    pact=vact*I_pv
-    ppas=vpas*ipas
+    data = pvsim(params.tolist()) #PV DATA IS OBTAINED
+    I_pv=data['Ir'] #PV CURRENT AT VACT INSTANT IS EXTRACTED
+    pact=vact*I_pv #ACTUAL PV POWER IS CALCULATED
+    ppas=vpas*ipas #PASS PV POWER IS CALCULATED
 
     #P&O
     if pact > ppas:                               #IF P_ACT IS GREATER THAN P_PAS
         if vact > vpas:
             vpas=vact
             ipas=I_pv
-            vact=vact+step #UP
+            vact=vact+step #STEP UP REFERENCE
             return vact,vpas,ipas
         else:
             vpas=vact
             ipas=I_pv
-            vact=vact-step #DOWN
+            vact=vact-step #STEP DOWN REFERENCE
             return vact,vpas,ipas
     else:                                            #IF P_ACT IS NOT GREATER THAN P_PAS
         if vact < vpas:
             vpas=vact
             ipas=I_pv
-            vact=vact+step #UP
+            vact=vact+step #STEP UP REFERENCE
             return vact,vpas,ipas
         else:
             vpas=vact
             ipas=I_pv
-            vact=vact-step #DOWN
+            vact=vact-step #STEP DOWN REFERENCE
             return vact,vpas,ipas
 
 
@@ -98,12 +98,12 @@ for instance in range(3):
         parametros = np.append(current_irr,[T,valoresV[gmppt]])
         datos = pvsim(parametros.tolist())
         ivec[iter2]=datos['Ir']
-        auxP[gmppt]=vvec[iter]*ivec[iter2]
+        auxP[gmppt]=vvec[iter]*ivec[iter2] #THE POWERS OBTAINED FROM THE VOLTAGE SWEEP ARE SAVED
         iter=iter+1
         iter2=iter2+1
 
-    vgbest=valoresV[np.argmax(auxP)]
-    vpas=0
+    vgbest=valoresV[np.argmax(auxP)] #THE BEST SWEEP VOLTAGE IS KEPT
+    vpas=0 #INITIALIZE P&O PARAMETERS
     ipas=0
     step=0.2
     vact,vpas,ipas=po(vgbest,vpas,ipas,step) #INITIALIZE P&O
