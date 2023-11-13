@@ -55,15 +55,16 @@ fitness=0
 
 def fitness_func(solution,solution_idx):
     #OBJECTIVE FUNCTION, RECEIVES THE NEW SOLUTIONS BY COMPARING THEM WITH THE OBJECTIVE VALUE.
+    #THEN IT RETURNS THE FITNESS VALUE OF THE NEW SOLUTION
     global current_irr,fitness,iter,iter2,vvec,ivec,vgbest
-    paramss = np.append(current_irr,[T,solution])
-    dataa = pvsim(paramss.tolist())
-    ipv=dataa['Ir']
-    pvv=ipv*solution
-    if(pvv[0]>fitness):
+    paramss = np.append(current_irr,[T,solution]) #CREATE THE ARRAY TO EXTRACT THE PV DATA FOR THE SOLUTION
+    dataa = pvsim(paramss.tolist()) #SAVE THE DATA EXTRACTED FOR THE SOLUTION
+    ipv=dataa['Ir'] #SAVE THE CURRENTS CORRESPONDING TO SOLUTION
+    pvv=ipv*solution #PV POWER IS CALCULATED
+    if(pvv[0]>fitness): #IF THE CALCULATED PV POWER IS GREATER THAN THE LAST FITNESS VALUE SAVED, SAVE THE NEW SOLUTION AS BEST POSITION
         vgbest=solution
-    fitness = pvv[0]
-    vvec[iter]=solution
+    fitness = pvv[0] #SAVE THE LAST FITNESS OBTAINED
+    vvec[iter]=solution #RECORD THE DATA TO PLOT
     ivec[iter2]=ipv
     iter=iter+1
     iter2=iter2+1
@@ -75,33 +76,33 @@ def po(vact,vpas,ipas,step):
     global current_irr
 
     params = np.append(current_irr,[T,vact])
-    data = pvsim(params.tolist())
-    I_pv=data['Ir']
-    pact=vact*I_pv
-    ppas=vpas*ipas
+    data = pvsim(params.tolist()) #PV DATA IS OBTAINED
+    I_pv=data['Ir'] #PV CURRENT AT VACT INSTANT IS EXTRACTED
+    pact=vact*I_pv #ACTUAL PV POWER IS CALCULATED
+    ppas=vpas*ipas #PASS PV POWER IS CALCULATED
 
-    
-    if pact > ppas:                               #SI P_ACT ES MAYOR A P_PAS
+    #P&O
+    if pact > ppas:                               #IF P_ACT IS GREATER THAN P_PAS
         if vact > vpas:
             vpas=vact
             ipas=I_pv
-            vact=vact+step #subir
+            vact=vact+step #STEP UP REFERENCE
             return vact,vpas,ipas
         else:
             vpas=vact
             ipas=I_pv
-            vact=vact-step #bajar
+            vact=vact-step #STEP DOWN REFERENCE
             return vact,vpas,ipas
-    else:                                            #SI P_ACT NO ES MAYOR A P_PAS
+    else:                                            #IF P_ACT IS NOT GREATER THAN P_PAS
         if vact < vpas:
             vpas=vact
             ipas=I_pv
-            vact=vact+step #subir
+            vact=vact+step #STEP UP REFERENCE
             return vact,vpas,ipas
         else:
             vpas=vact
             ipas=I_pv
-            vact=vact-step #bajar
+            vact=vact-step #STEP DOWN REFERENCE
             return vact,vpas,ipas
 
 
@@ -111,7 +112,7 @@ for instance in range(3):
     current_irr=irr[instance,:] #CURRENT IRRADIANCE
     p_creature=[[0.15*voc],[0.5*voc],[0.85*voc]] #INITIAL POSITION OF THE INDIVIDUALS
 
-    #GA STAGE
+    #GA STAGE AND PARAMETERS SETUP
     ga_instance = pygad.GA(num_generations=25,
                        num_parents_mating=2,
                        fitness_func=fitness_func,
@@ -125,14 +126,14 @@ for instance in range(3):
                        random_mutation_min_val=-1,
                        random_mutation_max_val=1)
 
-    ga_instance.run()
+    ga_instance.run() #RUN GA STAGE
 
-    step=0.2
+    step=0.2 #INITIALIZE P&O PARAMETERS
     vpas=vvec[iter-2]
     ipas=1
     vact,vpas,ipas=po(vgbest,vpas,ipas,step) #INITIALIZE P&O
 
-    vvec[iter]=vact
+    vvec[iter]=vact #RECORD DATA FOR PLOT
     ivec[iter2]=ipas
     iter=iter+1
     iter2=iter2+1
@@ -160,32 +161,32 @@ for z in range(309):
 fig, axes = plt.subplots(nrows=3, ncols=1)
 
 
-# Gráfico 1
+# GRAPHIC 1
 axes[0].step(x, vvec*ivec, where='post')
 axes[0].step(x, pmax, where='post', color='red')
 axes[0].set_title('Potencia P(t)')
 axes[0].grid(axis='x', color='0.95')
 axes[0].grid(axis='y', color='0.95')
-axes[0].set_xlim([0, 6])     # Límites del eje x
-axes[0].set_ylim([0, 400])   # Límites del eje y
+axes[0].set_xlim([0, 6])     # X AXIS LIMITS
+axes[0].set_ylim([0, 400])   # Y AXIS LIMITS
 
 
-# Gráfico 2
+# GRAPHIC 2
 axes[1].step(x, vvec, where='post')
 axes[1].set_title('Voltaje V(t)')
 axes[1].grid(axis='x', color='0.95')
 axes[1].grid(axis='y', color='0.95')
-axes[1].set_xlim([0, 6])    # Límites del eje x
-axes[1].set_ylim([0, 50])   # Límites del eje y
+axes[1].set_xlim([0, 6])    # X AXIS LIMITS
+axes[1].set_ylim([0, 50])   # Y AXIS LIMITS
 
 
-# Gráfico 3
+# GRAPHIC 3
 axes[2].step(x, ivec, where='post')
 axes[2].set_title('Corriente I(t)')
 axes[2].grid(axis='x', color='0.95')
 axes[2].grid(axis='y', color='0.95')
-axes[2].set_xlim([0, 6])    # Límites del eje x
-axes[2].set_ylim([0, 15])   # Límites del eje y
+axes[2].set_xlim([0, 6])    # X AXIS LIMITS
+axes[2].set_ylim([0, 15])   # Y AXIS LIMITS
 
 #plt.savefig("gapo.pdf")
 plt.show()
